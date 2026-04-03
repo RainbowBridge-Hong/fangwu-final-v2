@@ -200,16 +200,12 @@ img{max-width:100%;display:block}
   <div class="nav-links">
     <a class="lk on" onclick="gp('home')">首页</a>
     <a class="lk" onclick="gp('fangchan')">房产</a>
-    <a class="lk" onclick="gp('tudi')">土地</a>
     <a class="lk" onclick="gp('diandongche')">汽车</a>
-    <a class="lk" onclick="gp('dianji')">电动车</a>
-    <a class="lk" onclick="gp('wangyueche')">网约车</a>
-    <a class="lk" onclick="gp('xueche')">学车</a>
     <a class="lk" onclick="gp('xueche')">网约车</a>
     <a class="lk" onclick="gp('news')">资讯</a>
   </div>
   <div class="nav-btns">
-    <button class="btn btn-outline" id="navLoginBtn" onclick="sm('loginModal')">登录</button>
+    <button class="btn btn-outline" id="navLoginBtn" onclick="sm('loginModal')">登录/注册</button>
     <button class="btn btn-gold" onclick="sm('registerModal')">注册</button>
   </div>
 </nav>
@@ -305,10 +301,10 @@ img{max-width:100%;display:block}
 <div class="page" id="pg-admin-login">
   <section class="sec" style="max-width:400px;padding-top:150px">
     <div class="mc" style="display:block">
-      <div class="mh"><i class="fas fa-lock"></i> 管理员登录</div>
+      <div class="mh"><i class="fas fa-lock"></i> 管理员登录/注册</div>
       <div class="fg"><label>账号</label><input type="text" id="adminUser" value="admin"></div>
       <div class="fg"><label>密码</label><input type="password" id="adminPwd" value="admin123"></div>
-      <button class="btn btn-gold" onclick="adminLogin()">登录</button>
+      <button class="btn btn-gold" onclick="adminLogin()">登录/注册</button>
       <button class="btn btn-outline" onclick="gp('home')" style="margin-top:10px">返回首页</button>
     </div>
   </section>
@@ -324,7 +320,7 @@ img{max-width:100%;display:block}
       <div class="mi" onclick="adminTab('car')"><i class="fas fa-car"></i> 汽车管理</div>
       <div class="mi" onclick="adminTab('news')"><i class="fas fa-newspaper"></i> 资讯管理</div>
       <div class="mi" onclick="adminTab('settings')"><i class="fas fa-cog"></i> 系统设置</div>
-      <div class="mi" onclick="adminLogout()" style="margin-top:auto;color:var(--rd)"><i class="fas fa-sign-out-alt"></i> 退出登录</div>
+      <div class="mi" onclick="adminLogout()" style="margin-top:auto;color:var(--rd)"><i class="fas fa-sign-out-alt"></i> 退出登录/注册</div>
     </div>
     <div class="admin-main">
       <div class="admin-header"><h1>数据概览</h1><button class="btn btn-gold" onclick="adminLogout()">退出</button></div>
@@ -338,9 +334,9 @@ img{max-width:100%;display:block}
   </div>
 </div>
 
-<div class="modal" id="loginModal"><div class="mc"><div class="mx" onclick="cm('loginModal')"><i class="fas fa-times"></i></div><div class="mh"><i class="fas fa-user"></i> 用户登录</div><div class="fg"><label>用户名/手机号</label><input type="text" id="loginUsername" placeholder="请输入用户名或手机号"></div><div class="fg"><label>密码</label><input type="password" id="loginPwd" placeholder="请输入密码"></div><button class="btn btn-gold" onclick="doLogin()">登录</button><div style="text-align:center;margin-top:15px;color:var(--t3);font-size:13px">还没有账号？<a href="#" onclick="cm('loginModal');sm('registerModal')" style="color:var(--g)">立即注册</a></div></div></div>
+<div class="modal" id="loginModal"><div class="mc"><div class="mx" onclick="cm('loginModal')"><i class="fas fa-times"></i></div><div class="mh"><i class="fas fa-user"></i> 用户登录/注册</div><div class="fg"><label>用户名/手机号</label><input type="text" id="loginUsername" placeholder="请输入用户名或手机号"></div><div class="fg"><label>密码</label><input type="password" id="loginPwd" placeholder="请输入密码"></div><button class="btn btn-gold" onclick="doLogin()">登录/注册</button><div style="text-align:center;margin-top:15px;color:var(--t3);font-size:13px">还没有账号？<a href="#" onclick="cm('loginModal');sm('registerModal')" style="color:var(--g)">立即注册</a></div></div></div>
 
-<div class="modal" id="registerModal"><div class="mc"><div class="mx" onclick="cm('registerModal')"><i class="fas fa-times"></i></div><div class="mh"><i class="fas fa-user-plus"></i> 用户注册</div><div class="fg"><label>用户名</label><input type="text" id="regUsername" placeholder="请输入用户名"></div><div class="fg"><label>手机号</label><input type="tel" id="regPhone" placeholder="请输入手机号"></div><div class="fg"><label>密码</label><input type="password" id="regPwd" placeholder="请输入密码（至少6位）"></div><button class="btn btn-gold" onclick="doRegister()">注册</button><div style="text-align:center;margin-top:15px;color:var(--t3);font-size:13px">已有账号？<a href="#" onclick="cm('registerModal');sm('loginModal')" style="color:var(--g)">立即登录</a></div></div></div>
+<div class="modal" id="registerModal"><div class="mc"><div class="mx" onclick="cm('registerModal')"><i class="fas fa-times"></i></div><div class="mh"><i class="fas fa-user-plus"></i> 用户注册</div><div class="fg"><label>用户名</label><input type="text" id="regUsername" placeholder="请输入用户名"></div><div class="fg"><label>手机号</label><input type="tel" id="regPhone" placeholder="请输入手机号"></div><div class="fg"><label>密码</label><input type="password" id="regPwd" placeholder="请输入密码（至少6位）"></div><button class="btn btn-gold" onclick="doRegister()">注册</button><div style="text-align:center;margin-top:15px;color:var(--t3);font-size:13px">已有账号？<a href="#" onclick="cm('registerModal');sm('loginModal')" style="color:var(--g)">立即登录/注册</a></div></div></div>
 
 <div class="stb" id="stb" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fas fa-arrow-up"></i></div>
 <div class="tc" id="tc"></div>
