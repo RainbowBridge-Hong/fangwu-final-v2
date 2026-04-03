@@ -24,7 +24,6 @@ window.addEventListener('load',function(){gp('home');
   });
 });
 
-
 function gp(page){
   var grid=document.getElementById('mainGrid');
   if(!grid)return;
@@ -60,7 +59,243 @@ function renderXueche(){
   var items=XUECHE_DATA.filter(function(x){return x.type==='驾校';}).map(function(x){return '<div class="crd"><div class="ci">&#127891;</div><div class="cb"><span class="ctag">'+x.district+'</span><div class="ct">'+x.name+'</div><div class="cm"><span>¥'+x.price+'</span></div></div></div>';}).join('');
   return '<h2>学车信息</h2><div class="tab">'+items+'</div>';
 }
-);
+
+function sm(id){document.getElementById(id).classList.add('on')}
+function cm(id){document.getElementById(id).classList.remove('on')}
+
+function doLogin(){
+  var u=document.getElementById('loginUsername').value.trim();
+  var p=document.getElementById('loginPwd').value;
+  if(!u||!p){toast('请输入用户名和密码','er');return}
+  var users=getCloud().users||{};
+  var found=null;
+  for(var k in users){
+    if((users[k].name===u||users[k].phone===u)&&users[k].password===p){found=users[k];break}
+  }
+  if(!found){toast('用户名或密码错误','er');return}
+  currentUser=found;
+  localStorage.setItem('fangwu_current_user',JSON.stringify(found));
+  cm('loginModal');
+  toast('登录成功！欢迎回来，'+found.name,'ok');
+  updateNavUser();
+}
+
+function doRegister(){
+  var name=document.getElementById('regUsername').value.trim();
+  var phone=document.getElementById('regPhone').value.trim();
+  var pwd=document.getElementById('regPwd').value;
+  if(!name||!phone||!pwd){toast('请填写完整信息','er');return}
+  if(name.length<2){toast('用户名至少2个字符','er');return}
+  if(!/^1[3-9]\d{9}$/.test(phone)){toast('请输入有效手机号','er');return}
+  if(pwd.length<6){toast('密码至少6个字符','er');return}
+  var cloud=getCloud();
+  if(!cloud.users)cloud.users={};
+  if(cloud.users[name]){toast('用户名已被注册','er');return}
+  var newUser={name:name,phone:phone,password:pwd,regTime:new Date().toISOString(),status:'active'};
+  cloud.users[name]=newUser;
+  setCloud(cloud);
+  currentUser=newUser;
+  localStorage.setItem('fangwu_current_user',JSON.stringify(newUser));
+  cm('registerModal');
+  toast('注册成功！欢迎加入，'+name,'ok');
+  updateNavUser();
+}
+
+function updateNavUser(){
+  var btn=document.getElementById('navLoginBtn');
+  if(btn&&currentUser){btn.textContent='👤 '+currentUser.name;btn.onclick=function(){toast('已登录：'+currentUser.name)}}
+}
+
+function adminLogin(){
+  var u=document.getElementById('adminUser').value;
+  var p=document.getElementById('adminPwd').value;
+  if(u==='admin'&&p==='admin123'){
+    localStorage.setItem('fangwu_admin','1');
+    gp('admin');
+    toast('Login successful!','ok');
+    loadAdminData();
+  }else{toast('账号或密码错误','er')}
+}
+
+function adminLogout(){localStorage.removeItem('fangwu_admin');gp('home');toast('已退出登录','ok')}
+
+function loadAdminData(){
+  var cloud=getCloud();
+  var users=cloud.users||{};
+  var arr=Object.values(users);
+  var el=document.getElementById('statUsers');
+  if(el)el.textContent=arr.length;
+  var el2=document.getElementById('statFangchan');
+  if(el2)el2.textContent=LOU_PAN.length+ERSHOU.length;
+  var el3=document.getElementById('statCar');
+  if(el3)el3.textContent=CAR_DATA.length;
+  var el4=document.getElementById('statXueche');
+  if(el4)el4.textContent=XUECHE_DATA.length;
+  var tbody=document.getElementById('usersTableBody');
+  if(tbody){
+    var html='';
+    arr.forEach(function(u,i){
+      html+='<tr><td>'+(i+1)+'</td><td>'+u.name+'</td><td>'+(u.phone||'')+'</td><td>'+(u.regTime?new Date(u.regTime).toLocaleDateString():'')+'</td><td><span class="bdg gr">正常</span></td><td><button class="btn btn-sm btn-rd" onclick="delUser(\''+u.name+'\')">删除</button></td></tr>';
+    });
+    tbody.innerHTML=html||'<tr><td colspan="6" style="text-align:center;color:var(--t3)">暂无用户</td></tr>';
+  }
+  var ftbody=document.getElementById('fangchanTableBody');
+  if(ftbody){
+    var fh='';
+    LOU_PAN.slice(0,20).forEach(function(l,i){
+      fh+='<tr><td>'+(i+1)+'</td><td>'+l.name+'</td><td>'+l.district+'</td><td>楼盘</td><td>'+l.price+'元/平</td><td>'+l.date+'</td><td><button class="btn btn-sm btn-rd">删除</button></td></tr>';
+    });
+    ftbody.innerHTML=fh;
+  }
+}
+
+function adminTab(tab){
+  document.querySelectorAll('.admin-panel').forEach(function(p){p.style.display='none'});
+  document.querySelectorAll('.mi2').forEach(function(m){m.classList.remove('on')});
+  if(event&&event.currentTarget)event.currentTarget.classList.add('on');
+  var el=document.getElementById('admin-'+tab);
+  if(el)el.style.display='block';
+  if(tab==='users'||tab==='fangchan')loadAdminData();
+}
+
+function delUser(name){
+  if(!confirm('确定删除用户 '+name+'？'))return;
+  var cloud=getCloud();
+  delete cloud.users[name];
+  setCloud(cloud);
+  loadAdminData();
+  toast('用户已删除','ok');
+}
+
+function addUser(){
+  var name=document.getElementById('addUserName').value.trim();
+  var phone=document.getElementById('addUserPhone').value.trim();
+  var pwd=document.getElementById('addUserPwd').value||'123456';
+  if(!name||!phone){toast('请填写用户名和手机号','er');return}
+  var cloud=getCloud();
+  if(!cloud.users)cloud.users={};
+  if(cloud.users[name]){toast('用户名已存在','er');return}
+  cloud.users[name]={name:name,phone:phone,password:pwd,regTime:new Date().toISOString(),status:'active'};
+  setCloud(cloud);
+  cm('addUserModal');
+  loadAdminData();
+  toast('用户添加成功！','ok');
+}
+
+function submitProperty(){
+  var name=document.getElementById('propName').value.trim();
+  var district=document.getElementById('propDistrict').value;
+  var price=document.getElementById('propPrice').value;
+  if(!name||!district||!price){toast('请填写必填项','er');return}
+  var item={id:'lp'+Date.now(),name:name,district:district,price:parseFloat(price),wy:parseFloat(document.getElementById('propWY').value)||0,tc:parseFloat(document.getElementById('propTC').value)||0,xq:document.getElementById('propXQ').value||'',date:new Date().toLocaleDateString(),views:0,desc:document.getElementById('propDesc').value||''};
+  LOU_PAN.unshift(item);
+  cm('addPropertyModal');
+  toast('楼盘发布成功！','ok');
+  renderFangchan();
+}
+
+function submitCar(){
+  var name=document.getElementById('carName').value.trim();
+  var brand=document.getElementById('carBrand').value;
+  var price=document.getElementById('carPrice').value;
+  if(!name||!brand||!price){toast('请填写必填项','er');return}
+  var item={id:'car'+Date.now(),name:name,brand:brand,district:document.getElementById('carDistrict').value||'龙华区',price:parseFloat(price),type:document.getElementById('carType').value||'新能源电车',date:new Date().toLocaleDateString(),views:0,desc:document.getElementById('carDesc').value||''};
+  CAR_DATA.unshift(item);
+  cm('addCarModal');
+  toast('车辆信息发布成功！','ok');
+  renderCars();
+}
+
+function renderFangchan(district){
+  var grid=document.getElementById('fangchanGrid');
+  if(!grid)return;
+  var data=district&&district!=='all'?LOU_PAN.filter(function(l){return l.district===district}):LOU_PAN;
+  var html='';
+  data.slice(0,12).forEach(function(item){
+    html+='<div class="crd" onclick="toast(\'详情请致电: 13876699053\')">'
+      +'<div class="ci">&#127968;</div>'
+      +'<div class="cb"><span class="ctag">'+item.district+'</span>'
+      +'<div class="ct">'+item.name+'</div>'
+      +'<div class="cm"><span>&#127979; '+item.xq+'</span><span>&#128176; '+item.wy+'元/平</span><span>&#128663; '+item.tc+'元/月</span></div>'
+      +'<div class="cp">'+item.price+'<small>元/平</small></div></div>'
+      +'<div class="cf"><span><i class="fas fa-clock"></i> '+item.date+'</span><span><i class="fas fa-eye"></i> '+item.views+'</span></div></div>';
+  });
+  grid.innerHTML=html||'<div style="text-align:center;color:var(--t3);padding:40px">暂无数据</div>';
+}
+
+function renderErshou(district){
+  var grid=document.getElementById('ershouGrid');
+  if(!grid)return;
+  var data=district&&district!=='all'?ERSHOU.filter(function(e){return e.district===district}):ERSHOU;
+  var html='';
+  data.slice(0,12).forEach(function(item){
+    html+='<div class="crd" onclick="showDetail(\'ershou\',\''+item.id+'\')">'+
+      '<div class="ci">&#127968;</div>'+
+      '<div class="cb"><span class="ctag">'+item.district+'</span>'+
+      '<div class="ct">'+item.name+'</div>'+
+      '<div class="cm"><span>&#128207; '+item.area+'</span><span>&#128176; '+item.wy+'</span></div>'+
+      '<div class="cp">'+item.price+'<small>万</small></div></div>'+
+      '<div class="cf"><span>'+item.date+'</span><span>'+item.views+'</span></div></div>';
+  });
+  grid.innerHTML=html||'<div style="text-align:center;color:var(--t3);padding:40px">暂无数据</div>';
+}
+
+function renderPolicy(){
+  var list=document.getElementById('policyList');
+  if(!list)return;
+  var html='';
+  FANGCHAN_POLICY.slice(0,15).forEach(function(p){
+    html+='<div class="pi"><div class="pic">&#128218;</div><div class="pc">'
+      +'<div class="pct">'+p.title+'</div>'
+      +'<div class="pcd">'+p.content+'</div>'
+      +'<div class="pd"><i class="fas fa-building"></i> '+p.source+' &middot; '+p.date+' &middot; <i class="fas fa-eye"></i> '+p.views+' 阅读</div>'
+      +'</div></div>';
+  });
+  list.innerHTML=html;
+}
+
+function renderCars(district){
+  var grid=document.getElementById('carGrid');
+  if(!grid)return;
+  var data=district&&district!=='all'?CAR_DATA.filter(function(c){return c.district===district}):CAR_DATA;
+  var html='';
+  data.slice(0,12).forEach(function(c){
+    html+='<div class="crd" onclick="showDetail(\'car\',\''+c.id+'\')">'+
+      '<div class="ci" style="font-size:48px">&#128663;</div>'+
+      '<div class="cb"><span class="ctag">'+c.district+'</span>'+
+      '<div class="ct">'+c.name+'</div>'+
+      '<div class="cm"><span>'+c.brand+'</span><span>'+c.type+'</span></div>'+
+      '<div class="cp">'+c.price+'<small>万</small></div></div>'+
+      '<div class="cf"><span>'+c.date+'</span><span>'+c.views+'</span></div></div>';
+  });
+  grid.innerHTML=html||'<div style="text-align:center;color:var(--t3);padding:40px">暂无数据</div>';
+}
+
+function renderXueche(){
+  var grid=document.getElementById('xuecheGrid');
+  if(!grid)return;
+  var feats=[
+    {fi:'&#128666;',ttl:'平台政策咨询',d:'滴滴、高德、美团、曹操最新政策解读'},
+    {fi:'&#128104;',ttl:'从业资格培训',d:'网约车从业资格证报名、培训、拿证一站式服务'},
+    {fi:'&#128663;',ttl:'新能源车购车',d:'与4S店合作，专享团购价，贷款优惠'},
+    {fi:'&#128086;',ttl:'租车服务',d:'多种车型可选，月租低至2800元，含保险'},
+    {fi:'&#128275;',ttl:'合规运营指导',d:'违规处理、证件办理、平台规则全解答'},
+    {fi:'&#128172;',ttl:'老司机交流',d:'加入司机社群，共享接单技巧'},
+  ];
+  var html='';
+  feats.forEach(function(f){
+    html+='<div class="ft"><div class="fi">'+f.fi+'</div><div class="ct">'+f.ttl+'</div><div class="desc">'+f.d+'</div></div>';
+  });
+  grid.innerHTML=html;
+  var list=document.getElementById('xuecheList');
+  if(!list)return;
+  var lh='';
+  XUECHE_DATA.slice(0,10).forEach(function(x){
+    lh+='<div class="ni"><div class="nim">&#128661;</div><div class="nc">'
+      +'<div class="nt">'+x.title+'</div>'
+      +'<div class="nm"><span>'+x.date+'</span><span class="tag">平台政策</span><span><i class="fas fa-eye"></i> '+x.views+'</span></div>'
+      +'</div></div>';
+  });
   list.innerHTML=lh;
 }
 
